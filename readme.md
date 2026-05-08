@@ -529,92 +529,321 @@ define('DISCORD_STAFF_APPLICATION_WEBHOOK_URL', '');
 
 If enabled, the site can send Discord notifications for logins, votes, config submissions, suggestions, reports, and staff applications.
 
-## DirectAdmin Setup
+## Choose Your Install Method
+
+GitHub README files do not support real tabs, so use the expandable section that matches your hosting.
+
+Before choosing a method, make sure your domain DNS is pointed at your server or hosting account:
+
+```text
+A record:    your-domain.com -> your server IP
+CNAME:       www -> your-domain.com
+```
+
+DNS can take a few minutes to several hours to update. SSL will usually fail until DNS points to the correct server.
+
+<details>
+<summary><strong>Method 1: DirectAdmin Shared Hosting</strong></summary>
+
+Use this if your host gives you a DirectAdmin panel.
+
+### 1. Set The PHP Version
 
 1. Log into DirectAdmin.
-2. Open `Domain Management`.
-3. Add or select your domain.
-4. Set PHP to version 8.0 or newer.
-5. Open `MySQL Management`.
-6. Create a database.
-7. Create a database user.
-8. Open phpMyAdmin.
-9. Select the database.
-10. Import `setup.sql`.
-11. Upload all project files to:
+2. Open `Domain Setup`.
+3. Select your domain.
+4. Set PHP to `8.0` or newer.
+5. Save.
+
+Some DirectAdmin panels call this `PHP Version Selector` or `Select PHP Version`.
+
+### 2. Create The Database
+
+1. Open `MySQL Management`.
+2. Click `Create New Database`.
+3. Create a database name.
+4. Create a database user.
+5. Use a strong password.
+6. Save the database name, username, and password.
+
+Your database host is usually:
+
+```text
+localhost
+```
+
+### 3. Import The SQL
+
+1. Open phpMyAdmin from DirectAdmin.
+2. Click your new database on the left.
+3. Click `Import`.
+4. Select `setup.sql`.
+5. Click `Go`.
+6. Wait for a success message.
+
+### 4. Upload The Files
+
+Upload the project files to:
 
 ```text
 /domains/YOURDOMAIN/public_html
 ```
 
-12. Confirm `.htaccess` uploaded.
-13. Copy `includes/secrets.local.example.php` to `includes/secrets.local.php`.
-14. Edit `includes/secrets.local.php`.
-15. Enable SSL:
+Make sure `.htaccess` uploads. If you do not see `.htaccess`, enable hidden files in your FTP client or File Manager.
+
+### 5. Create Your Settings File
+
+Copy:
+
+```text
+includes/secrets.local.example.php
+```
+
+To:
+
+```text
+includes/secrets.local.php
+```
+
+Edit `includes/secrets.local.php` and set:
+
+```php
+define('DB_HOST', 'localhost');
+define('DB_USER', 'your_database_user');
+define('DB_PASS', 'your_database_password');
+define('DB_NAME', 'your_database_name');
+define('SITE_URL', 'https://your-domain.com');
+```
+
+Then add your Discord Client ID, Client Secret, redirect URI, and admin Discord ID.
+
+### 6. Enable SSL
+
+In DirectAdmin, open:
 
 ```text
 SSL Certificates -> Free & automatic certificate from Let's Encrypt
 ```
 
-16. Visit:
+Select your domain and `www` if you use it, then issue the certificate.
+
+### 7. Test
+
+Open:
 
 ```text
-https://YOURDOMAIN/login.php
+https://your-domain.com/login.php
 ```
 
-## cPanel Setup
+Then log in with Discord, activate your license, and open:
+
+```text
+https://your-domain.com/admin/dashboard.php
+```
+
+</details>
+
+<details>
+<summary><strong>Method 2: cPanel Shared Hosting</strong></summary>
+
+Use this if your host gives you cPanel.
+
+### 1. Set The PHP Version
 
 1. Log into cPanel.
 2. Open `MultiPHP Manager`.
-3. Select PHP 8.0 or newer.
-4. Open `MySQL Databases`.
-5. Create a database.
-6. Create a database user.
-7. Add the user to the database with all privileges.
-8. Open phpMyAdmin.
-9. Select the database.
-10. Import `setup.sql`.
-11. Upload all project files to `public_html` or your addon domain root.
-12. Confirm `.htaccess` uploaded.
-13. Copy `includes/secrets.local.example.php` to `includes/secrets.local.php`.
-14. Edit `includes/secrets.local.php`.
-15. Open `SSL/TLS Status` and run AutoSSL if needed.
-16. Visit:
+3. Select your domain.
+4. Choose PHP `8.0` or newer.
+5. Apply.
+
+If your cPanel has `Select PHP Version`, use that instead and enable:
 
 ```text
-https://YOURDOMAIN/login.php
+pdo_mysql
+curl
+mbstring
+json
+fileinfo
 ```
 
-## Ubuntu Apache Setup
+### 2. Create The Database
 
-Install packages:
+1. Open `MySQL Databases`.
+2. Create a new database.
+3. Create a database user.
+4. Add the user to the database.
+5. Give the user `ALL PRIVILEGES`.
+6. Save the database name, username, and password.
+
+Database host is usually:
+
+```text
+localhost
+```
+
+### 3. Import The SQL
+
+1. Open phpMyAdmin.
+2. Select your database.
+3. Click `Import`.
+4. Select `setup.sql`.
+5. Click `Go`.
+
+### 4. Upload The Files
+
+For your main domain, upload to:
+
+```text
+public_html
+```
+
+For an addon domain, upload to the document root shown in cPanel for that addon domain.
+
+Make sure `.htaccess` uploads.
+
+### 5. Create Your Settings File
+
+Copy:
+
+```text
+includes/secrets.local.example.php
+```
+
+To:
+
+```text
+includes/secrets.local.php
+```
+
+Edit `includes/secrets.local.php` with your database, site URL, Discord app, and admin Discord ID.
+
+### 6. Enable SSL
+
+Open:
+
+```text
+SSL/TLS Status
+```
+
+Run AutoSSL if the domain is not already secured.
+
+### 7. Test
+
+Open:
+
+```text
+https://your-domain.com/login.php
+```
+
+If the site shows a 500 error, check that PHP is 8.0+ and all required PHP extensions are enabled.
+
+</details>
+
+<details>
+<summary><strong>Method 3: Ubuntu VPS With Apache</strong></summary>
+
+Use this if you have a fresh Ubuntu VPS and want Apache to serve the site directly.
+
+### 1. Point DNS To The Server
+
+At your domain/DNS provider, create:
+
+```text
+A record: your-domain.com -> YOUR_SERVER_IP
+CNAME:    www -> your-domain.com
+```
+
+Wait for DNS to update before issuing SSL.
+
+### 2. Install Packages
 
 ```bash
 sudo apt update
-sudo apt install apache2 mysql-server php php-mysql php-curl php-mbstring php-json php-fileinfo libapache2-mod-php unzip
+sudo apt install apache2 mysql-server php php-mysql php-curl php-mbstring php-json php-fileinfo libapache2-mod-php unzip certbot python3-certbot-apache
 ```
 
-Enable Apache modules:
+Enable required Apache modules:
 
 ```bash
 sudo a2enmod rewrite headers expires deflate ssl
 sudo systemctl restart apache2
 ```
 
-Create the site folder:
+### 3. Create The Site Folder
 
 ```bash
 sudo mkdir -p /var/www/serenity-docs
 sudo chown -R $USER:www-data /var/www/serenity-docs
 ```
 
-Upload files to:
+Upload or unzip the site files into:
 
 ```text
 /var/www/serenity-docs
 ```
 
-Set permissions:
+If you uploaded a zip:
+
+```bash
+cd /var/www/serenity-docs
+unzip serenity-docs.zip
+```
+
+The files should be directly inside `/var/www/serenity-docs`, not inside an extra nested folder.
+
+### 4. Create The MySQL Database
+
+Log into MySQL:
+
+```bash
+sudo mysql
+```
+
+Run these commands. Change the database name, username, and password:
+
+```sql
+CREATE DATABASE serenity_docs CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'serenity_user'@'localhost' IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
+GRANT ALL PRIVILEGES ON serenity_docs.* TO 'serenity_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+Import the SQL:
+
+```bash
+mysql -u serenity_user -p serenity_docs < /var/www/serenity-docs/setup.sql
+```
+
+### 5. Create Your Settings File
+
+```bash
+cd /var/www/serenity-docs
+cp includes/secrets.local.example.php includes/secrets.local.php
+nano includes/secrets.local.php
+```
+
+Set:
+
+```php
+define('DB_HOST', 'localhost');
+define('DB_USER', 'serenity_user');
+define('DB_PASS', 'CHANGE_THIS_PASSWORD');
+define('DB_NAME', 'serenity_docs');
+define('SITE_URL', 'https://your-domain.com');
+```
+
+Also set your Discord Client ID, Client Secret, redirect URI, and admin Discord ID.
+
+Save in nano:
+
+```text
+Ctrl + O
+Enter
+Ctrl + X
+```
+
+### 6. Set Permissions
 
 ```bash
 sudo chown -R www-data:www-data /var/www/serenity-docs
@@ -623,17 +852,20 @@ sudo find /var/www/serenity-docs -type f -exec chmod 644 {} \;
 sudo chmod -R 775 /var/www/serenity-docs/uploads
 ```
 
+### 7. Create The Apache Virtual Host
+
 Create:
 
-```text
-/etc/apache2/sites-available/serenity-docs.conf
+```bash
+sudo nano /etc/apache2/sites-available/serenity-docs.conf
 ```
 
-Example:
+Paste this:
 
 ```apache
 <VirtualHost *:80>
     ServerName your-domain.com
+    ServerAlias www.your-domain.com
     DocumentRoot /var/www/serenity-docs
 
     <Directory /var/www/serenity-docs>
@@ -646,28 +878,59 @@ Example:
 </VirtualHost>
 ```
 
-Enable it:
+Enable the site:
 
 ```bash
+sudo a2dissite 000-default.conf
 sudo a2ensite serenity-docs.conf
 sudo apache2ctl configtest
 sudo systemctl reload apache2
 ```
 
-Add SSL:
+### 8. Add SSL
 
 ```bash
-sudo apt install certbot python3-certbot-apache
-sudo certbot --apache -d your-domain.com
+sudo certbot --apache -d your-domain.com -d www.your-domain.com
 ```
 
-## Ubuntu Nginx Setup
+Choose the redirect-to-HTTPS option when Certbot asks.
 
-Install packages:
+### 9. Test
+
+Open:
+
+```text
+https://your-domain.com/login.php
+```
+
+Useful log commands:
+
+```bash
+sudo tail -f /var/log/apache2/serenity-docs-error.log
+sudo tail -f /var/log/apache2/error.log
+```
+
+</details>
+
+<details>
+<summary><strong>Method 4: Ubuntu VPS With Nginx + PHP-FPM</strong></summary>
+
+Use this if you want Nginx to serve the site directly.
+
+### 1. Point DNS To The Server
+
+At your domain/DNS provider:
+
+```text
+A record: your-domain.com -> YOUR_SERVER_IP
+CNAME:    www -> your-domain.com
+```
+
+### 2. Install Packages
 
 ```bash
 sudo apt update
-sudo apt install nginx mysql-server php-fpm php-mysql php-curl php-mbstring php-json php-fileinfo unzip
+sudo apt install nginx mysql-server php-fpm php-mysql php-curl php-mbstring php-json php-fileinfo unzip certbot python3-certbot-nginx
 ```
 
 Find your PHP-FPM socket:
@@ -676,18 +939,80 @@ Find your PHP-FPM socket:
 ls /run/php/
 ```
 
-Create:
+Example output:
 
 ```text
-/etc/nginx/sites-available/serenity-docs
+php8.3-fpm.sock
 ```
 
-Example:
+Use whatever socket your server shows.
+
+### 3. Create The Site Folder
+
+```bash
+sudo mkdir -p /var/www/serenity-docs
+sudo chown -R $USER:www-data /var/www/serenity-docs
+```
+
+Upload or unzip the project into:
+
+```text
+/var/www/serenity-docs
+```
+
+### 4. Create And Import The Database
+
+```bash
+sudo mysql
+```
+
+```sql
+CREATE DATABASE serenity_docs CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'serenity_user'@'localhost' IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
+GRANT ALL PRIVILEGES ON serenity_docs.* TO 'serenity_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+Import:
+
+```bash
+mysql -u serenity_user -p serenity_docs < /var/www/serenity-docs/setup.sql
+```
+
+### 5. Create The Settings File
+
+```bash
+cd /var/www/serenity-docs
+cp includes/secrets.local.example.php includes/secrets.local.php
+nano includes/secrets.local.php
+```
+
+Set database, site URL, Discord, and admin Discord ID values.
+
+### 6. Set Permissions
+
+```bash
+sudo chown -R www-data:www-data /var/www/serenity-docs
+sudo find /var/www/serenity-docs -type d -exec chmod 755 {} \;
+sudo find /var/www/serenity-docs -type f -exec chmod 644 {} \;
+sudo chmod -R 775 /var/www/serenity-docs/uploads
+```
+
+### 7. Create The Nginx Site Config
+
+Create:
+
+```bash
+sudo nano /etc/nginx/sites-available/serenity-docs
+```
+
+Paste this. Change `php8.3-fpm.sock` if your server showed a different socket:
 
 ```nginx
 server {
     listen 80;
-    server_name your-domain.com;
+    server_name your-domain.com www.your-domain.com;
     root /var/www/serenity-docs;
     index index.php index.html;
 
@@ -724,32 +1049,210 @@ server {
 }
 ```
 
-If your server uses a different PHP version, change:
-
-```text
-php8.3-fpm.sock
-```
-
-To the socket shown by:
-
-```bash
-ls /run/php/
-```
-
-Enable the site:
+Enable it:
 
 ```bash
 sudo ln -s /etc/nginx/sites-available/serenity-docs /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-Add SSL:
+### 8. Add SSL
 
 ```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d your-domain.com
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com
 ```
+
+Choose redirect to HTTPS if prompted.
+
+### 9. Test
+
+Open:
+
+```text
+https://your-domain.com/login.php
+```
+
+Useful logs:
+
+```bash
+sudo tail -f /var/log/nginx/error.log
+sudo journalctl -u php*-fpm -f
+```
+
+</details>
+
+<details>
+<summary><strong>Method 5: Ubuntu Nginx Reverse Proxy To Apache</strong></summary>
+
+Use this if you want Nginx to handle the public domain and SSL, but Apache to run the PHP site behind it.
+
+This is useful when:
+
+- You already use Apache configs.
+- You want Nginx in front for SSL/proxy handling.
+- You host multiple apps and want Nginx as the main entry point.
+
+### 1. DNS
+
+Point your domain to the server:
+
+```text
+A record: your-domain.com -> YOUR_SERVER_IP
+CNAME:    www -> your-domain.com
+```
+
+### 2. Install Packages
+
+```bash
+sudo apt update
+sudo apt install nginx apache2 mysql-server php php-mysql php-curl php-mbstring php-json php-fileinfo libapache2-mod-php unzip certbot python3-certbot-nginx
+```
+
+Enable Apache modules:
+
+```bash
+sudo a2enmod rewrite headers
+sudo systemctl restart apache2
+```
+
+### 3. Move Apache To Port 8080
+
+Edit Apache ports:
+
+```bash
+sudo nano /etc/apache2/ports.conf
+```
+
+Change:
+
+```apache
+Listen 80
+```
+
+To:
+
+```apache
+Listen 127.0.0.1:8080
+```
+
+### 4. Create The Site Folder
+
+```bash
+sudo mkdir -p /var/www/serenity-docs
+sudo chown -R $USER:www-data /var/www/serenity-docs
+```
+
+Upload files to:
+
+```text
+/var/www/serenity-docs
+```
+
+Create `includes/secrets.local.php`, import `setup.sql`, and set permissions the same way as the Apache method above.
+
+### 5. Create The Apache Backend Site
+
+Create:
+
+```bash
+sudo nano /etc/apache2/sites-available/serenity-docs-backend.conf
+```
+
+Paste:
+
+```apache
+<VirtualHost 127.0.0.1:8080>
+    ServerName your-domain.com
+    ServerAlias www.your-domain.com
+    DocumentRoot /var/www/serenity-docs
+
+    <Directory /var/www/serenity-docs>
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/serenity-docs-backend-error.log
+    CustomLog ${APACHE_LOG_DIR}/serenity-docs-backend-access.log combined
+</VirtualHost>
+```
+
+Enable Apache backend:
+
+```bash
+sudo a2dissite 000-default.conf
+sudo a2ensite serenity-docs-backend.conf
+sudo apache2ctl configtest
+sudo systemctl reload apache2
+```
+
+### 6. Create The Nginx Public Proxy
+
+Create:
+
+```bash
+sudo nano /etc/nginx/sites-available/serenity-docs
+```
+
+Paste:
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com www.your-domain.com;
+
+    client_max_body_size 100m;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Enable Nginx site:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/serenity-docs /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### 7. Add SSL On Nginx
+
+```bash
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+```
+
+Nginx will accept HTTPS traffic and proxy it to Apache on `127.0.0.1:8080`.
+
+### 8. Test The Proxy
+
+Check Apache locally:
+
+```bash
+curl -I http://127.0.0.1:8080
+```
+
+Check the public domain:
+
+```bash
+curl -I https://your-domain.com
+```
+
+Useful logs:
+
+```bash
+sudo tail -f /var/log/nginx/error.log
+sudo tail -f /var/log/apache2/serenity-docs-backend-error.log
+```
+
+</details>
 
 ## Security Checklist
 
