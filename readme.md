@@ -50,488 +50,9 @@ Use this quick checklist if you already know what you are doing:
 13. Activate your license at `/activate.php`.
 14. Open `/admin/dashboard.php`.
 
-## Step 1: Upload The Files
-
-Upload all project files to your website document root.
-
-Common locations:
-
-```text
-DirectAdmin: /home/USERNAME/domains/YOURDOMAIN/public_html
-cPanel:      /home/USERNAME/public_html
-Ubuntu:      /var/www/serenity-docs
-```
-
-Important: make sure `.htaccess` uploads too. Some FTP programs hide dotfiles by default.
-
-## Step 2: Create A Database
-
-Create a new MySQL database and database user from your hosting panel.
-
-Write these down:
-
-```text
-Database host
-Database name
-Database username
-Database password
-```
-
-The database user needs all privileges for that database.
-
-## Step 3: Import The Database
-
-Import this file into your database:
-
-```text
-setup.sql
-```
-
-In phpMyAdmin:
-
-1. Open phpMyAdmin.
-2. Click your database.
-3. Click `Import`.
-4. Choose `setup.sql`.
-5. Click `Go`.
-6. Wait for the success message.
-
-Do not rename the tables unless you know what you are doing.
-
-## Step 4: Create Your Settings File
-
-Copy:
-
-```text
-includes/secrets.local.example.php
-```
-
-To:
-
-```text
-includes/secrets.local.php
-```
-
-Then edit `includes/secrets.local.php`.
-
-Example:
-
-```php
-<?php
-define('DB_HOST', 'localhost');
-define('DB_USER', 'your_database_user');
-define('DB_PASS', 'your_database_password');
-define('DB_NAME', 'your_database_name');
-
-define('SITE_NAME', 'Serenity Docs');
-define('SITE_URL', 'https://your-domain.com');
-define('ADMIN_EMAIL', 'admin@example.com');
-define('APP_ENV', 'production');
-
-define('DISCORD_CLIENT_ID', 'your_discord_client_id');
-define('DISCORD_CLIENT_SECRET', 'your_discord_client_secret');
-define('DISCORD_REDIRECT_URI', SITE_URL . '/auth/discord-callback.php');
-
-define('ALLOWED_ADMIN_DISCORD_IDS', [
-    'your_discord_user_id',
-]);
-
-define('STORE_URL', 'https://example.com/store');
-define('DISCORD_URL', 'https://discord.gg/yourinvite');
-
-define('DISCORD_LOGIN_WEBHOOK_URL', '');
-define('DISCORD_VOTE_WEBHOOK_URL', '');
-define('DISCORD_CONFIG_WEBHOOK_URL', '');
-define('DISCORD_SUGGESTION_WEBHOOK_URL', '');
-define('DISCORD_USER_REPORT_WEBHOOK_URL', '');
-define('DISCORD_STAFF_APPLICATION_WEBHOOK_URL', '');
-```
-
-Important rules:
-
-- `SITE_URL` must use `https://`.
-- `SITE_URL` should not end with `/`.
-- `DISCORD_REDIRECT_URI` must match the Discord Developer Portal redirect URL exactly.
-- Leave webhook URLs blank if you do not use them.
-- Keep `APP_ENV` set to `production` unless you are debugging.
-
-## Step 5: Create A Discord Login App
-
-The site uses Discord login.
-
-1. Go to the Discord Developer Portal.
-2. Click `New Application`.
-3. Give it a name.
-4. Open `OAuth2`.
-5. Copy the Client ID.
-6. Copy or reset the Client Secret.
-7. Add this redirect URL:
-
-```text
-https://your-domain.com/auth/discord-callback.php
-```
-
-8. Save changes in Discord.
-9. Put the Client ID and Client Secret into `includes/secrets.local.php`.
-
-## Step 6: Add Yourself As Admin
-
-You need your Discord user ID.
-
-1. Open Discord.
-2. Open User Settings.
-3. Go to Advanced.
-4. Enable Developer Mode.
-5. Right-click your Discord profile.
-6. Click `Copy User ID`.
-7. Add it to `ALLOWED_ADMIN_DISCORD_IDS`.
-
-Example:
-
-```php
-define('ALLOWED_ADMIN_DISCORD_IDS', [
-    '123456789012345678',
-]);
-```
-
-If you need multiple admins:
-
-```php
-define('ALLOWED_ADMIN_DISCORD_IDS', [
-    '123456789012345678',
-    '987654321098765432',
-]);
-```
-
-## Step 7: Set Permissions
-
-Most hosts work with:
-
-```text
-Folders: 755
-Files:   644
-```
-
-These folders may need write access:
-
-```text
-uploads/
-uploads/loader/
-```
-
-Try `755` first. If uploads fail, try `775` for upload folders only.
-
-Avoid `777` unless your host specifically requires it.
-
-## Step 8: Log In
-
-Open:
-
-```text
-https://your-domain.com/login.php
-```
-
-Log in with Discord.
-
-If Discord sends you to an error page, check your redirect URL and Discord settings.
-
-## Step 9: Activate Your License
-
-Open:
-
-```text
-https://your-domain.com/activate.php
-```
-
-Paste the license key you were given by the seller.
-
-After activation, you should be able to access the protected site pages.
-
-## Step 10: Open The Admin Dashboard
-
-Open:
-
-```text
-https://your-domain.com/admin/dashboard.php
-```
-
-If you are redirected away, your Discord user ID is probably missing or incorrect in `ALLOWED_ADMIN_DISCORD_IDS`.
-
-## Admin Pages
-
-| Page | What It Does |
-|---|---|
-| `admin/dashboard.php` | Main dashboard and site settings |
-| `admin/add_doc.php` | Add documentation pages |
-| `admin/edit_doc.php` | Edit existing documentation |
-| `admin/configs_manage.php` | Approve, deny, delete, and enable public configs |
-| `admin/resellers_manage.php` | Manage reseller listings and public reseller visibility |
-| `admin/announcements_manage.php` | Add banners and popups |
-| `admin/suggestions_manage.php` | Review public suggestions |
-| `admin/staff_applications_manage.php` | Review support staff applications |
-| `admin/status.php` | Manage service status |
-| `admin/faq_manage.php` | Manage FAQ entries |
-| `admin/accounts_manage.php` | Manage users and bans |
-
-## Default Public Features
-
-Some optional pages are hidden by default on fresh installs.
-
-| Feature | Default |
-|---|---|
-| Configs page | Hidden |
-| Resellers nav link | Hidden |
-| Resellers homepage block | Hidden |
-| Staff application page | Available by direct link |
-| Suggestions page | Available |
-| Status page | Available |
-| FAQ page | Available |
-
-Enable Configs:
-
-```text
-Admin Dashboard -> Site Settings -> Show Configs on the public site
-```
-
-Or:
-
-```text
-Admin -> Manage -> Config management -> Public Configs Page
-```
-
-Enable Resellers:
-
-```text
-Admin -> Manage -> Reseller listings -> Public site
-```
-
-The staff application public link is shown here:
-
-```text
-Admin -> Manage -> Staff applications
-```
-
-The public staff application URL is:
-
-```text
-https://your-domain.com/apps.php
-```
-
-## Adding Documentation
-
-To add a page:
-
-1. Open `admin/dashboard.php`.
-2. Click or use `Add Documentation Page`.
-3. Enter a title.
-4. Enter the content.
-5. Save.
-
-Documentation content supports Markdown.
-
-Example Markdown:
-
-```markdown
-# Main Title
-
-## Section Title
-
-- Bullet point
-- Another point
-
-**Bold text**
-
-`inline code`
-```
-
-## Announcements
-
-Announcements can be used for:
-
-- Important updates.
-- Maintenance notices.
-- Warnings.
-- Homepage banners.
-- Popups.
-
-Open:
-
-```text
-Admin -> Manage -> Announcements
-```
-
-## FAQ
-
-Open:
-
-```text
-Admin -> Manage -> FAQ management
-```
-
-Use FAQs for common customer questions.
-
-## Status Page
-
-Open:
-
-```text
-Admin -> Manage -> Status management
-```
-
-Use this page to show service status, uptime notes, or maintenance information.
-
-## Suggestions
-
-Users can submit suggestions from:
-
-```text
-https://your-domain.com/suggestions.php
-```
-
-Admins review them from:
-
-```text
-Admin -> Manage -> Suggestions
-```
-
-## Staff Applications
-
-The public staff application page is:
-
-```text
-https://your-domain.com/apps.php
-```
-
-Admins review applications from:
-
-```text
-Admin -> Manage -> Staff applications
-```
-
-That admin page also shows the public application link so you can copy it.
-
-## Configs
-
-Configs are hidden by default.
-
-To enable them:
-
-```text
-Admin -> Manage -> Config management -> Public Configs Page
-```
-
-When enabled, users can browse and submit configs.
-
-Admins can approve or deny configs before they appear publicly.
-
-## Resellers
-
-Resellers are hidden by default.
-
-To enable them:
-
-```text
-Admin -> Manage -> Reseller listings -> Public site
-```
-
-You can choose whether resellers show in the navigation and on the homepage.
-
-## Loader Download
-
-You can show a `Download Loader` button in the navigation.
-
-### External Loader URL
-
-Open:
-
-```text
-Admin Dashboard -> Site Settings
-```
-
-Set:
-
-```text
-Loader Download URL
-```
-
-Use a full public URL.
-
-Example:
-
-```text
-https://example.com/downloads/loader.exe
-```
-
-### Local Loader Files
-
-Loader files can be placed in:
-
-```text
-uploads/loader/
-```
-
-The protected loader endpoint is:
-
-```text
-https://your-domain.com/loader/update
-```
-
-Do not link users directly to files inside `uploads/loader/`.
-
-## Branding And Favicons
-
-Brand images live in:
-
-```text
-assets/site-images/
-```
-
-Replace these files with your own versions, keeping the same filenames:
-
-| File | Purpose |
-|---|---|
-| `favicon.ico` | Main browser favicon |
-| `favicon-16x16.png` | Small favicon |
-| `favicon-32x32.png` | Standard favicon |
-| `favicon-48x48.png` | Larger favicon |
-| `apple-touch-icon.png` | Apple touch icon |
-| `android-chrome-192x192.png` | Android/PWA icon |
-| `android-chrome-512x512.png` | Android/PWA icon |
-| `site.webmanifest` | Web app manifest |
-| `og-default.png` | Optional social preview image |
-
-Also update these files with your real domain/name if needed:
-
-```text
-site.webmanifest
-robots.txt
-sitemap.xml
-```
-
-## Optional Discord Webhooks
-
-Webhook settings are in:
-
-```text
-includes/secrets.local.php
-```
-
-Leave a webhook blank to disable it:
-
-```php
-define('DISCORD_LOGIN_WEBHOOK_URL', '');
-define('DISCORD_VOTE_WEBHOOK_URL', '');
-define('DISCORD_CONFIG_WEBHOOK_URL', '');
-define('DISCORD_SUGGESTION_WEBHOOK_URL', '');
-define('DISCORD_USER_REPORT_WEBHOOK_URL', '');
-define('DISCORD_STAFF_APPLICATION_WEBHOOK_URL', '');
-```
-
-If enabled, the site can send Discord notifications for logins, votes, config submissions, suggestions, reports, and staff applications.
-
 ## Choose Your Install Method
 
-GitHub README files do not support real tabs, so use the expandable section that matches your hosting.
+Use the expandable section that matches your hosting.
 
 Before choosing a method, make sure your domain DNS is pointed at your server or hosting account:
 
@@ -1253,6 +774,486 @@ sudo tail -f /var/log/apache2/serenity-docs-backend-error.log
 ```
 
 </details>
+
+
+## Step 1: Upload The Files
+
+Upload all project files to your website document root.
+
+Common locations:
+
+```text
+DirectAdmin: /home/USERNAME/domains/YOURDOMAIN/public_html
+cPanel:      /home/USERNAME/public_html
+Ubuntu:      /var/www/serenity-docs
+```
+
+Important: make sure `.htaccess` uploads too. Some FTP programs hide dotfiles by default.
+
+## Step 2: Create A Database
+
+Create a new MySQL database and database user from your hosting panel.
+
+Write these down:
+
+```text
+Database host
+Database name
+Database username
+Database password
+```
+
+The database user needs all privileges for that database.
+
+## Step 3: Import The Database
+
+Import this file into your database:
+
+```text
+setup.sql
+```
+
+In phpMyAdmin:
+
+1. Open phpMyAdmin.
+2. Click your database.
+3. Click `Import`.
+4. Choose `setup.sql`.
+5. Click `Go`.
+6. Wait for the success message.
+
+Do not rename the tables unless you know what you are doing.
+
+## Step 4: Create Your Settings File
+
+Copy:
+
+```text
+includes/secrets.local.example.php
+```
+
+To:
+
+```text
+includes/secrets.local.php
+```
+
+Then edit `includes/secrets.local.php`.
+
+Example:
+
+```php
+<?php
+define('DB_HOST', 'localhost');
+define('DB_USER', 'your_database_user');
+define('DB_PASS', 'your_database_password');
+define('DB_NAME', 'your_database_name');
+
+define('SITE_NAME', 'Serenity Docs');
+define('SITE_URL', 'https://your-domain.com');
+define('ADMIN_EMAIL', 'admin@example.com');
+define('APP_ENV', 'production');
+
+define('DISCORD_CLIENT_ID', 'your_discord_client_id');
+define('DISCORD_CLIENT_SECRET', 'your_discord_client_secret');
+define('DISCORD_REDIRECT_URI', SITE_URL . '/auth/discord-callback.php');
+
+define('ALLOWED_ADMIN_DISCORD_IDS', [
+    'your_discord_user_id',
+]);
+
+define('STORE_URL', 'https://example.com/store');
+define('DISCORD_URL', 'https://discord.gg/yourinvite');
+
+define('DISCORD_LOGIN_WEBHOOK_URL', '');
+define('DISCORD_VOTE_WEBHOOK_URL', '');
+define('DISCORD_CONFIG_WEBHOOK_URL', '');
+define('DISCORD_SUGGESTION_WEBHOOK_URL', '');
+define('DISCORD_USER_REPORT_WEBHOOK_URL', '');
+define('DISCORD_STAFF_APPLICATION_WEBHOOK_URL', '');
+```
+
+Important rules:
+
+- `SITE_URL` must use `https://`.
+- `SITE_URL` should not end with `/`.
+- `DISCORD_REDIRECT_URI` must match the Discord Developer Portal redirect URL exactly.
+- Leave webhook URLs blank if you do not use them.
+- Keep `APP_ENV` set to `production` unless you are debugging.
+
+## Step 5: Create A Discord Login App
+
+The site uses Discord login.
+
+1. Go to the Discord Developer Portal.
+2. Click `New Application`.
+3. Give it a name.
+4. Open `OAuth2`.
+5. Copy the Client ID.
+6. Copy or reset the Client Secret.
+7. Add this redirect URL:
+
+```text
+https://your-domain.com/auth/discord-callback.php
+```
+
+8. Save changes in Discord.
+9. Put the Client ID and Client Secret into `includes/secrets.local.php`.
+
+## Step 6: Add Yourself As Admin
+
+You need your Discord user ID.
+
+1. Open Discord.
+2. Open User Settings.
+3. Go to Advanced.
+4. Enable Developer Mode.
+5. Right-click your Discord profile.
+6. Click `Copy User ID`.
+7. Add it to `ALLOWED_ADMIN_DISCORD_IDS`.
+
+Example:
+
+```php
+define('ALLOWED_ADMIN_DISCORD_IDS', [
+    '123456789012345678',
+]);
+```
+
+If you need multiple admins:
+
+```php
+define('ALLOWED_ADMIN_DISCORD_IDS', [
+    '123456789012345678',
+    '987654321098765432',
+]);
+```
+
+## Step 7: Set Permissions
+
+Most hosts work with:
+
+```text
+Folders: 755
+Files:   644
+```
+
+These folders may need write access:
+
+```text
+uploads/
+uploads/loader/
+```
+
+Try `755` first. If uploads fail, try `775` for upload folders only.
+
+Avoid `777` unless your host specifically requires it.
+
+## Step 8: Log In
+
+Open:
+
+```text
+https://your-domain.com/login.php
+```
+
+Log in with Discord.
+
+If Discord sends you to an error page, check your redirect URL and Discord settings.
+
+## Step 9: Activate Your License
+
+Open:
+
+```text
+https://your-domain.com/activate.php
+```
+
+Paste the license key you were given by the seller.
+
+After activation, you should be able to access the protected site pages.
+
+## Step 10: Open The Admin Dashboard
+
+Open:
+
+```text
+https://your-domain.com/admin/dashboard.php
+```
+
+If you are redirected away, your Discord user ID is probably missing or incorrect in `ALLOWED_ADMIN_DISCORD_IDS`.
+
+## Admin Pages
+
+| Page | What It Does |
+|---|---|
+| `admin/dashboard.php` | Main dashboard and site settings |
+| `admin/add_doc.php` | Add documentation pages |
+| `admin/edit_doc.php` | Edit existing documentation |
+| `admin/configs_manage.php` | Approve, deny, delete, and enable public configs |
+| `admin/resellers_manage.php` | Manage reseller listings and public reseller visibility |
+| `admin/announcements_manage.php` | Add banners and popups |
+| `admin/suggestions_manage.php` | Review public suggestions |
+| `admin/staff_applications_manage.php` | Review support staff applications |
+| `admin/status.php` | Manage service status |
+| `admin/faq_manage.php` | Manage FAQ entries |
+| `admin/accounts_manage.php` | Manage users and bans |
+
+## Default Public Features
+
+Some optional pages are hidden by default on fresh installs.
+
+| Feature | Default |
+|---|---|
+| Configs page | Hidden |
+| Resellers nav link | Hidden |
+| Resellers homepage block | Hidden |
+| Staff application page | Available by direct link |
+| Suggestions page | Available |
+| Status page | Available |
+| FAQ page | Available |
+
+Enable Configs:
+
+```text
+Admin Dashboard -> Site Settings -> Show Configs on the public site
+```
+
+Or:
+
+```text
+Admin -> Manage -> Config management -> Public Configs Page
+```
+
+Enable Resellers:
+
+```text
+Admin -> Manage -> Reseller listings -> Public site
+```
+
+The staff application public link is shown here:
+
+```text
+Admin -> Manage -> Staff applications
+```
+
+The public staff application URL is:
+
+```text
+https://your-domain.com/apps.php
+```
+
+## Adding Documentation
+
+To add a page:
+
+1. Open `admin/dashboard.php`.
+2. Click or use `Add Documentation Page`.
+3. Enter a title.
+4. Enter the content.
+5. Save.
+
+Documentation content supports Markdown.
+
+Example Markdown:
+
+```markdown
+# Main Title
+
+## Section Title
+
+- Bullet point
+- Another point
+
+**Bold text**
+
+`inline code`
+```
+
+## Announcements
+
+Announcements can be used for:
+
+- Important updates.
+- Maintenance notices.
+- Warnings.
+- Homepage banners.
+- Popups.
+
+Open:
+
+```text
+Admin -> Manage -> Announcements
+```
+
+## FAQ
+
+Open:
+
+```text
+Admin -> Manage -> FAQ management
+```
+
+Use FAQs for common customer questions.
+
+## Status Page
+
+Open:
+
+```text
+Admin -> Manage -> Status management
+```
+
+Use this page to show service status, uptime notes, or maintenance information.
+
+## Suggestions
+
+Users can submit suggestions from:
+
+```text
+https://your-domain.com/suggestions.php
+```
+
+Admins review them from:
+
+```text
+Admin -> Manage -> Suggestions
+```
+
+## Staff Applications
+
+The public staff application page is:
+
+```text
+https://your-domain.com/apps.php
+```
+
+Admins review applications from:
+
+```text
+Admin -> Manage -> Staff applications
+```
+
+That admin page also shows the public application link so you can copy it.
+
+## Configs
+
+Configs are hidden by default.
+
+To enable them:
+
+```text
+Admin -> Manage -> Config management -> Public Configs Page
+```
+
+When enabled, users can browse and submit configs.
+
+Admins can approve or deny configs before they appear publicly.
+
+## Resellers
+
+Resellers are hidden by default.
+
+To enable them:
+
+```text
+Admin -> Manage -> Reseller listings -> Public site
+```
+
+You can choose whether resellers show in the navigation and on the homepage.
+
+## Loader Download
+
+You can show a `Download Loader` button in the navigation.
+
+### External Loader URL
+
+Open:
+
+```text
+Admin Dashboard -> Site Settings
+```
+
+Set:
+
+```text
+Loader Download URL
+```
+
+Use a full public URL.
+
+Example:
+
+```text
+https://example.com/downloads/loader.exe
+```
+
+### Local Loader Files
+
+Loader files can be placed in:
+
+```text
+uploads/loader/
+```
+
+The protected loader endpoint is:
+
+```text
+https://your-domain.com/loader/update
+```
+
+Do not link users directly to files inside `uploads/loader/`.
+
+## Branding And Favicons
+
+Brand images live in:
+
+```text
+assets/site-images/
+```
+
+Replace these files with your own versions, keeping the same filenames:
+
+| File | Purpose |
+|---|---|
+| `favicon.ico` | Main browser favicon |
+| `favicon-16x16.png` | Small favicon |
+| `favicon-32x32.png` | Standard favicon |
+| `favicon-48x48.png` | Larger favicon |
+| `apple-touch-icon.png` | Apple touch icon |
+| `android-chrome-192x192.png` | Android/PWA icon |
+| `android-chrome-512x512.png` | Android/PWA icon |
+| `site.webmanifest` | Web app manifest |
+| `og-default.png` | Optional social preview image |
+
+Also update these files with your real domain/name if needed:
+
+```text
+site.webmanifest
+robots.txt
+sitemap.xml
+```
+
+## Optional Discord Webhooks
+
+Webhook settings are in:
+
+```text
+includes/secrets.local.php
+```
+
+Leave a webhook blank to disable it:
+
+```php
+define('DISCORD_LOGIN_WEBHOOK_URL', '');
+define('DISCORD_VOTE_WEBHOOK_URL', '');
+define('DISCORD_CONFIG_WEBHOOK_URL', '');
+define('DISCORD_SUGGESTION_WEBHOOK_URL', '');
+define('DISCORD_USER_REPORT_WEBHOOK_URL', '');
+define('DISCORD_STAFF_APPLICATION_WEBHOOK_URL', '');
+```
+
+If enabled, the site can send Discord notifications for logins, votes, config submissions, suggestions, reports, and staff applications.
 
 ## Security Checklist
 
